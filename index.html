@@ -416,11 +416,10 @@
     let currentExpanded = null;
 
     // --- Exercise data ---
-    // exercises[i] = { name, weight, sets: [reps, ...] }
+    // exercises[i] = { name, sets: [{ weight, reps }, ...] }
     const exercises = Array.from({ length: NUM_EXERCISES }, () => ({
       name: '',
-      weight: '',
-      sets: Array(DEFAULT_SETS).fill('')
+      sets: Array.from({ length: DEFAULT_SETS }, () => ({ weight: '', reps: '' }))
     }));
 
     // --- Type pills (single select) ---
@@ -510,18 +509,7 @@
           }
         });
 
-        const weightInput = document.createElement('input');
-        weightInput.className = 'field-input ex-weight-input';
-        weightInput.type = 'number';
-        weightInput.placeholder = 'lbs';
-        weightInput.value = ex.weight;
-        weightInput.min = '0';
-        weightInput.addEventListener('input', e => {
-          exercises[idx].weight = e.target.value;
-        });
-
         nameWeightRow.appendChild(nameInput);
-        nameWeightRow.appendChild(weightInput);
         inner.appendChild(nameWeightRow);
 
         // Sets
@@ -539,7 +527,7 @@
         addSetBtn.className = 'set-btn';
         addSetBtn.textContent = '+ Set';
         addSetBtn.addEventListener('click', () => {
-          exercises[idx].sets.push('');
+          exercises[idx].sets.push({ weight: '', reps: '' });
           renderSets(setsContainer, idx);
         });
 
@@ -569,7 +557,7 @@
 
     function renderSets(container, exIdx) {
       container.innerHTML = '';
-      exercises[exIdx].sets.forEach((repsVal, sIdx) => {
+      exercises[exIdx].sets.forEach((setData, sIdx) => {
         const row = document.createElement('div');
         row.className = 'set-row';
 
@@ -577,17 +565,29 @@
         lbl.className = 'set-label';
         lbl.textContent = `Set ${sIdx + 1}`;
 
+        const weightInput = document.createElement('input');
+        weightInput.className = 'field-input set-reps-input';
+        weightInput.type = 'number';
+        weightInput.placeholder = 'lbs';
+        weightInput.min = '0';
+        weightInput.value = setData.weight || '';
+        weightInput.style.width = '60px';
+        weightInput.addEventListener('input', e => {
+          exercises[exIdx].sets[sIdx].weight = e.target.value;
+        });
+
         const repsInput = document.createElement('input');
         repsInput.className = 'field-input set-reps-input';
         repsInput.type = 'number';
         repsInput.placeholder = 'reps';
         repsInput.min = '0';
-        repsInput.value = repsVal;
+        repsInput.value = setData.reps || '';
         repsInput.addEventListener('input', e => {
-          exercises[exIdx].sets[sIdx] = e.target.value;
+          exercises[exIdx].sets[sIdx].reps = e.target.value;
         });
 
         row.appendChild(lbl);
+        row.appendChild(weightInput);
         row.appendChild(repsInput);
         container.appendChild(row);
       });
@@ -618,11 +618,13 @@
       const lines = [];
       exercises.forEach(ex => {
         if (!ex.name.trim()) return;
-        const weightStr = ex.weight ? ` — ${ex.weight} lbs` : '';
-        lines.push(`${ex.name.trim()}${weightStr}`);
-        ex.sets.forEach((reps, i) => {
-          if (reps !== '') {
-            lines.push(`  Set ${i + 1}: ${reps} reps`);
+        lines.push(ex.name.trim());
+        ex.sets.forEach((set, i) => {
+          if (set.reps !== '' || set.weight !== '') {
+            const w = set.weight ? `${set.weight} lbs` : '';
+            const r = set.reps ? `${set.reps} reps` : '';
+            const parts = [w, r].filter(Boolean).join(' × ');
+            lines.push(`  Set ${i + 1}: ${parts}`);
           }
         });
         lines.push('');
