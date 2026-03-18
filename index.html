@@ -18,10 +18,6 @@
       background: #191919;
       font-family: 'Inter', sans-serif;
       min-height: 100vh;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 2rem 1rem;
     }
 
     ::-webkit-scrollbar { width: 3px; }
@@ -30,21 +26,59 @@
 
     .widget {
       width: 100%;
-      max-width: 560px;
       background: #191919;
       border: 1px solid rgba(255, 255, 255, 0.06);
       border-radius: 8px;
-      padding: 1.25rem 1.5rem;
+      padding: 1.5rem 2rem;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
     }
 
     .header-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: 1.3rem;
+      letter-spacing: 0.06em;
+      color: #d0cbc5;
+    }
+
+    .header-date {
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      font-size: 0.65rem;
+      color: #6b6660;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 640px) {
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .col-label {
       font-family: 'Inter', sans-serif;
       font-weight: 400;
-      font-size: 0.7rem;
-      color: #a09a92;
+      font-size: 0.6rem;
+      color: #5a5650;
       text-transform: uppercase;
-      letter-spacing: 0.25em;
-      margin-bottom: 1rem;
+      letter-spacing: 0.15em;
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     }
 
     /* Section divider */
@@ -341,61 +375,68 @@
 </head>
 <body>
   <div class="widget">
-    <div class="header-label">Quick Log</div>
-
-    <!-- Step 1: Workout Setup -->
-    <div class="section">
-      <input class="field-input" id="workoutName" type="text" placeholder="Workout name..." autocomplete="off" />
+    <div class="header-row">
+      <div class="header-label">Quick Log</div>
+      <div class="header-date" id="headerDate"></div>
     </div>
 
-    <div class="section">
-      <div class="section-label">Type</div>
-      <div class="pills" id="typePills">
-        <div class="pill active" data-value="Strength">Strength</div>
-        <div class="pill" data-value="Cardio">Cardio</div>
-        <div class="pill" data-value="Mobility">Mobility</div>
-        <div class="pill" data-value="HIIT">HIIT</div>
-        <div class="pill" data-value="Sport">Sport</div>
-      </div>
-    </div>
+    <div class="two-col">
+      <!-- Left column: Setup -->
+      <div class="setup-col">
+        <div class="col-label">Workout Setup</div>
 
-    <div class="section">
-      <div class="section-label">Muscle Groups</div>
-      <div class="pills" id="musclePills">
-        <div class="pill" data-value="Chest">Chest</div>
-        <div class="pill" data-value="Back">Back</div>
-        <div class="pill" data-value="Shoulders">Shoulders</div>
-        <div class="pill" data-value="Arms">Arms</div>
-        <div class="pill" data-value="Legs">Legs</div>
-        <div class="pill" data-value="Core">Core</div>
-        <div class="pill" data-value="Full Body">Full Body</div>
-      </div>
-    </div>
+        <div class="section">
+          <input class="field-input" id="workoutName" type="text" placeholder="Workout name..." autocomplete="off" />
+        </div>
 
-    <hr class="divider" />
-
-    <!-- Step 2: Exercise Log -->
-    <div class="section">
-      <div class="section-label">Exercises</div>
-      <div class="exercise-list" id="exerciseList"></div>
-    </div>
-
-    <hr class="divider" />
-
-    <!-- Step 3: Submit -->
-    <div class="section">
-      <div class="submit-row" style="margin-bottom:0.5rem;">
-        <input class="field-input duration-input" id="duration" type="number" min="1" placeholder="Duration (min)" />
-        <div style="flex:1;">
-          <div class="pills" id="ratingPills">
-            <div class="pill" data-value="Great">Great</div>
-            <div class="pill" data-value="Good">Good</div>
-            <div class="pill" data-value="Average">Average</div>
-            <div class="pill" data-value="Poor">Poor</div>
+        <div class="section">
+          <div class="section-label">Type</div>
+          <div class="pills" id="typePills">
+            <div class="pill active" data-value="Strength">Strength</div>
+            <div class="pill" data-value="Cardio">Cardio</div>
+            <div class="pill" data-value="Mobility">Mobility</div>
+            <div class="pill" data-value="HIIT">HIIT</div>
+            <div class="pill" data-value="Sport">Sport</div>
           </div>
         </div>
+
+        <div class="section">
+          <div class="section-label">Muscle Groups</div>
+          <div class="pills" id="musclePills">
+            <div class="pill" data-value="Chest">Chest</div>
+            <div class="pill" data-value="Back">Back</div>
+            <div class="pill" data-value="Shoulders">Shoulders</div>
+            <div class="pill" data-value="Arms">Arms</div>
+            <div class="pill" data-value="Legs">Legs</div>
+            <div class="pill" data-value="Core">Core</div>
+            <div class="pill" data-value="Full Body">Full Body</div>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="section">
+          <div class="section-label">Session Details</div>
+          <div class="submit-row" style="margin-bottom:0.5rem;">
+            <input class="field-input duration-input" id="duration" type="number" min="1" placeholder="Duration (min)" />
+            <div style="flex:1;">
+              <div class="pills" id="ratingPills">
+                <div class="pill" data-value="Great">Great</div>
+                <div class="pill" data-value="Good">Good</div>
+                <div class="pill" data-value="Average">Average</div>
+                <div class="pill" data-value="Poor">Poor</div>
+              </div>
+            </div>
+          </div>
+          <textarea class="notes-input" id="notes" rows="2" placeholder="Notes..."></textarea>
+        </div>
       </div>
-      <textarea class="notes-input" id="notes" rows="2" placeholder="Notes..."></textarea>
+
+      <!-- Right column: Exercises -->
+      <div class="exercises-col">
+        <div class="col-label">Exercises</div>
+        <div class="exercise-list" id="exerciseList"></div>
+      </div>
     </div>
 
     <button class="log-btn" id="logBtn">Log Workout</button>
@@ -771,6 +812,8 @@
     });
 
     // --- Init ---
+    const now = new Date();
+    document.getElementById('headerDate').textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
     buildExerciseList();
   </script>
 </body>
