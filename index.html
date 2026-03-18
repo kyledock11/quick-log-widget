@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick Log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #191919;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2a2725; border-radius: 2px; }
+
+    .widget {
+      width: 100%;
+      max-width: 560px;
+      background: #191919;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .header-label {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 0.7rem;
+      color: #a09a92;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      margin-bottom: 1rem;
+    }
+
+    /* Section divider */
+    .section {
+      margin-bottom: 0.85rem;
+    }
+
+    .section-label {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 0.6rem;
+      color: #5a5650;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 0.45rem;
+    }
+
+    /* Inputs */
+    .field-input {
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      font-size: 0.78rem;
+      color: #e8e4df;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 0.35rem 0.6rem;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .field-input::placeholder {
+      color: #5a5650;
+    }
+
+    .field-input:focus {
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    /* Pill chips */
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+
+    .pill {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #7a756e;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+      user-select: none;
+    }
+
+    .pill:hover {
+      background: rgba(255, 255, 255, 0.07);
+      color: #a09a92;
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .pill.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #d0cbc5;
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    /* Exercise slots */
+    .exercise-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .exercise-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .exercise-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 0.65rem;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      user-select: none;
+    }
+
+    .exercise-header:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .ex-caret {
+      flex-shrink: 0;
+      width: 11px;
+      height: 11px;
+      color: #4a4640;
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    .exercise-card.expanded .ex-caret {
+      transform: rotate(90deg);
+      color: #8a857e;
+    }
+
+    .ex-label {
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      font-size: 0.75rem;
+      color: #8a857e;
+      flex: 1;
+    }
+
+    .ex-label.named {
+      color: #b0aba5;
+    }
+
+    .exercise-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease;
+    }
+
+    .exercise-card.expanded .exercise-body {
+      max-height: 600px;
+    }
+
+    .exercise-body-inner {
+      padding: 0.1rem 0.65rem 0.6rem 0.65rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .ex-row {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+    }
+
+    .ex-name-input {
+      flex: 1;
+    }
+
+    .ex-weight-input {
+      width: 72px;
+    }
+
+    .sets-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .set-row {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .set-label {
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      font-size: 0.65rem;
+      color: #5a5650;
+      width: 38px;
+      flex-shrink: 0;
+    }
+
+    .set-reps-input {
+      width: 64px;
+    }
+
+    .set-controls {
+      display: flex;
+      gap: 0.3rem;
+      align-items: center;
+    }
+
+    .set-btn {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 0.6rem;
+      color: #5a5650;
+      background: none;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 4px;
+      padding: 0.15rem 0.45rem;
+      cursor: pointer;
+      transition: color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .set-btn:hover {
+      color: #a09a92;
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    /* Submit section */
+    .submit-row {
+      display: flex;
+      gap: 0.4rem;
+      align-items: flex-start;
+    }
+
+    .duration-input {
+      width: 120px;
+      flex-shrink: 0;
+    }
+
+    .notes-input {
+      width: 100%;
+      resize: none;
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      font-size: 0.78rem;
+      color: #e8e4df;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 0.35rem 0.6rem;
+      outline: none;
+      transition: border-color 0.15s ease;
+      line-height: 1.5;
+    }
+
+    .notes-input::placeholder {
+      color: #5a5650;
+    }
+
+    .notes-input:focus {
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .log-btn {
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #6ec07a;
+      background: rgba(110, 192, 122, 0.12);
+      border: 1px solid rgba(110, 192, 122, 0.2);
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .log-btn:hover:not(:disabled) {
+      background: rgba(110, 192, 122, 0.2);
+      border-color: rgba(110, 192, 122, 0.35);
+    }
+
+    .log-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .feedback-row {
+      text-align: center;
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      font-size: 0.7rem;
+      min-height: 1.2rem;
+      margin-top: 0.35rem;
+    }
+
+    .feedback-row.success {
+      color: #6ec07a;
+    }
+
+    .feedback-row.error {
+      color: #d07e7e;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      margin: 0.75rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="widget">
+    <div class="header-label">Quick Log</div>
+
+    <!-- Step 1: Workout Setup -->
+    <div class="section">
+      <input class="field-input" id="workoutName" type="text" placeholder="Workout name..." autocomplete="off" />
+    </div>
+
+    <div class="section">
+      <div class="section-label">Type</div>
+      <div class="pills" id="typePills">
+        <div class="pill active" data-value="Strength">Strength</div>
+        <div class="pill" data-value="Cardio">Cardio</div>
+        <div class="pill" data-value="Mobility">Mobility</div>
+        <div class="pill" data-value="HIIT">HIIT</div>
+        <div class="pill" data-value="Sport">Sport</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Muscle Groups</div>
+      <div class="pills" id="musclePills">
+        <div class="pill" data-value="Chest">Chest</div>
+        <div class="pill" data-value="Back">Back</div>
+        <div class="pill" data-value="Shoulders">Shoulders</div>
+        <div class="pill" data-value="Arms">Arms</div>
+        <div class="pill" data-value="Legs">Legs</div>
+        <div class="pill" data-value="Core">Core</div>
+        <div class="pill" data-value="Full Body">Full Body</div>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- Step 2: Exercise Log -->
+    <div class="section">
+      <div class="section-label">Exercises</div>
+      <div class="exercise-list" id="exerciseList"></div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- Step 3: Submit -->
+    <div class="section">
+      <div class="submit-row" style="margin-bottom:0.5rem;">
+        <input class="field-input duration-input" id="duration" type="number" min="1" placeholder="Duration (min)" />
+        <div style="flex:1;">
+          <div class="pills" id="ratingPills">
+            <div class="pill" data-value="Great">Great</div>
+            <div class="pill" data-value="Good">Good</div>
+            <div class="pill" data-value="Average">Average</div>
+            <div class="pill" data-value="Poor">Poor</div>
+          </div>
+        </div>
+      </div>
+      <textarea class="notes-input" id="notes" rows="2" placeholder="Notes..."></textarea>
+    </div>
+
+    <button class="log-btn" id="logBtn">Log Workout</button>
+    <div class="feedback-row" id="feedbackRow"></div>
+  </div>
+
+  <script>
+    const CORS_PROXY = 'https://cors-proxy.kyle-d7d.workers.dev';
+    const DB_STRENGTH = '3226a121-2986-81b0-8416-d5164c14aa9b';
+
+    const NUM_EXERCISES = 5;
+    const DEFAULT_SETS = 3;
+
+    // State
+    let selectedType = 'Strength';
+    let selectedMuscles = new Set();
+    let selectedRating = null;
+    let currentExpanded = null;
+
+    // --- Exercise data ---
+    // exercises[i] = { name, weight, sets: [reps, ...] }
+    const exercises = Array.from({ length: NUM_EXERCISES }, () => ({
+      name: '',
+      weight: '',
+      sets: Array(DEFAULT_SETS).fill('')
+    }));
+
+    // --- Type pills (single select) ---
+    document.getElementById('typePills').querySelectorAll('.pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.getElementById('typePills').querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        selectedType = pill.dataset.value;
+      });
+    });
+
+    // --- Muscle group pills (multi-select) ---
+    document.getElementById('musclePills').querySelectorAll('.pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        const val = pill.dataset.value;
+        if (selectedMuscles.has(val)) {
+          selectedMuscles.delete(val);
+          pill.classList.remove('active');
+        } else {
+          selectedMuscles.add(val);
+          pill.classList.add('active');
+        }
+      });
+    });
+
+    // --- Rating pills (single select) ---
+    document.getElementById('ratingPills').querySelectorAll('.pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.getElementById('ratingPills').querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        selectedRating = pill.dataset.value;
+      });
+    });
+
+    // --- Build exercise slots ---
+    function buildExerciseList() {
+      const list = document.getElementById('exerciseList');
+      list.innerHTML = '';
+
+      const caretSVG = `<svg class="ex-caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="4.5 3 7.5 6 4.5 9"/></svg>`;
+
+      exercises.forEach((ex, idx) => {
+        const card = document.createElement('div');
+        card.className = 'exercise-card';
+        card.id = `ex-card-${idx}`;
+
+        // Header
+        const header = document.createElement('div');
+        header.className = 'exercise-header';
+        header.innerHTML = caretSVG;
+
+        const label = document.createElement('span');
+        label.className = 'ex-label' + (ex.name ? ' named' : '');
+        label.textContent = ex.name || `Exercise ${idx + 1}`;
+        label.id = `ex-label-${idx}`;
+        header.appendChild(label);
+
+        header.addEventListener('click', () => toggleExercise(idx));
+
+        // Body
+        const body = document.createElement('div');
+        body.className = 'exercise-body';
+        body.id = `ex-body-${idx}`;
+
+        const inner = document.createElement('div');
+        inner.className = 'exercise-body-inner';
+
+        // Name + Weight row
+        const nameWeightRow = document.createElement('div');
+        nameWeightRow.className = 'ex-row';
+
+        const nameInput = document.createElement('input');
+        nameInput.className = 'field-input ex-name-input';
+        nameInput.type = 'text';
+        nameInput.placeholder = 'Exercise name...';
+        nameInput.value = ex.name;
+        nameInput.autocomplete = 'off';
+        nameInput.addEventListener('input', e => {
+          exercises[idx].name = e.target.value;
+          const lbl = document.getElementById(`ex-label-${idx}`);
+          if (e.target.value.trim()) {
+            lbl.textContent = e.target.value.trim();
+            lbl.className = 'ex-label named';
+          } else {
+            lbl.textContent = `Exercise ${idx + 1}`;
+            lbl.className = 'ex-label';
+          }
+        });
+
+        const weightInput = document.createElement('input');
+        weightInput.className = 'field-input ex-weight-input';
+        weightInput.type = 'number';
+        weightInput.placeholder = 'lbs';
+        weightInput.value = ex.weight;
+        weightInput.min = '0';
+        weightInput.addEventListener('input', e => {
+          exercises[idx].weight = e.target.value;
+        });
+
+        nameWeightRow.appendChild(nameInput);
+        nameWeightRow.appendChild(weightInput);
+        inner.appendChild(nameWeightRow);
+
+        // Sets
+        const setsContainer = document.createElement('div');
+        setsContainer.className = 'sets-list';
+        setsContainer.id = `sets-${idx}`;
+        renderSets(setsContainer, idx);
+        inner.appendChild(setsContainer);
+
+        // Set controls
+        const controls = document.createElement('div');
+        controls.className = 'set-controls';
+
+        const addSetBtn = document.createElement('button');
+        addSetBtn.className = 'set-btn';
+        addSetBtn.textContent = '+ Set';
+        addSetBtn.addEventListener('click', () => {
+          exercises[idx].sets.push('');
+          renderSets(setsContainer, idx);
+        });
+
+        const removeSetBtn = document.createElement('button');
+        removeSetBtn.className = 'set-btn';
+        removeSetBtn.textContent = '− Set';
+        removeSetBtn.addEventListener('click', () => {
+          if (exercises[idx].sets.length > 1) {
+            exercises[idx].sets.pop();
+            renderSets(setsContainer, idx);
+          }
+        });
+
+        controls.appendChild(addSetBtn);
+        controls.appendChild(removeSetBtn);
+        inner.appendChild(controls);
+
+        body.appendChild(inner);
+        card.appendChild(header);
+        card.appendChild(body);
+        list.appendChild(card);
+      });
+
+      // Open first slot by default
+      toggleExercise(0);
+    }
+
+    function renderSets(container, exIdx) {
+      container.innerHTML = '';
+      exercises[exIdx].sets.forEach((repsVal, sIdx) => {
+        const row = document.createElement('div');
+        row.className = 'set-row';
+
+        const lbl = document.createElement('span');
+        lbl.className = 'set-label';
+        lbl.textContent = `Set ${sIdx + 1}`;
+
+        const repsInput = document.createElement('input');
+        repsInput.className = 'field-input set-reps-input';
+        repsInput.type = 'number';
+        repsInput.placeholder = 'reps';
+        repsInput.min = '0';
+        repsInput.value = repsVal;
+        repsInput.addEventListener('input', e => {
+          exercises[exIdx].sets[sIdx] = e.target.value;
+        });
+
+        row.appendChild(lbl);
+        row.appendChild(repsInput);
+        container.appendChild(row);
+      });
+    }
+
+    function toggleExercise(idx) {
+      // Collapse all
+      exercises.forEach((_, i) => {
+        const card = document.getElementById(`ex-card-${i}`);
+        if (card) card.classList.remove('expanded');
+      });
+
+      const card = document.getElementById(`ex-card-${idx}`);
+      if (!card) return;
+
+      // If it was the one already open, leave all collapsed
+      if (currentExpanded === idx) {
+        currentExpanded = null;
+        return;
+      }
+
+      card.classList.add('expanded');
+      currentExpanded = idx;
+    }
+
+    // --- Format exercise content ---
+    function formatContent() {
+      const lines = [];
+      exercises.forEach(ex => {
+        if (!ex.name.trim()) return;
+        const weightStr = ex.weight ? ` — ${ex.weight} lbs` : '';
+        lines.push(`${ex.name.trim()}${weightStr}`);
+        ex.sets.forEach((reps, i) => {
+          if (reps !== '') {
+            lines.push(`  Set ${i + 1}: ${reps} reps`);
+          }
+        });
+        lines.push('');
+      });
+      return lines.join('\n').trim();
+    }
+
+    // --- Update workout streak localStorage ---
+    function updateStreak() {
+      const today = new Date().toISOString().slice(0, 10);
+      let data = [];
+      try {
+        const stored = localStorage.getItem('workout_streak_data');
+        data = stored ? JSON.parse(stored) : [];
+        if (!Array.isArray(data)) data = [];
+      } catch (e) {
+        data = [];
+      }
+      if (!data.includes(today)) {
+        data.push(today);
+      }
+      localStorage.setItem('workout_streak_data', JSON.stringify(data));
+    }
+
+    // --- Reset form ---
+    function resetForm() {
+      document.getElementById('workoutName').value = '';
+      document.getElementById('duration').value = '';
+      document.getElementById('notes').value = '';
+
+      // Reset type
+      selectedType = 'Strength';
+      document.getElementById('typePills').querySelectorAll('.pill').forEach((p, i) => {
+        p.classList.toggle('active', i === 0);
+      });
+
+      // Reset muscles
+      selectedMuscles = new Set();
+      document.getElementById('musclePills').querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+
+      // Reset rating
+      selectedRating = null;
+      document.getElementById('ratingPills').querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+
+      // Reset exercises
+      exercises.forEach(ex => {
+        ex.name = '';
+        ex.weight = '';
+        ex.sets = Array(DEFAULT_SETS).fill('');
+      });
+
+      currentExpanded = null;
+      buildExerciseList();
+    }
+
+    // --- Submit ---
+    document.getElementById('logBtn').addEventListener('click', async () => {
+      const name = document.getElementById('workoutName').value.trim();
+      const duration = document.getElementById('duration').value;
+      const notes = document.getElementById('notes').value.trim();
+      const today = new Date().toISOString().slice(0, 10);
+
+      const workoutTitle = name
+        ? `${name} — ${today}`
+        : `Workout — ${today}`;
+
+      const content = formatContent();
+
+      const logBtn = document.getElementById('logBtn');
+      const feedbackRow = document.getElementById('feedbackRow');
+
+      logBtn.disabled = true;
+      logBtn.textContent = 'Logging...';
+      feedbackRow.textContent = '';
+      feedbackRow.className = 'feedback-row';
+
+      const properties = {
+        Date: { type: 'date', value: today },
+        Type: { type: 'select', value: selectedType },
+        Area: { type: 'multi_select', values: ['Dojo'] }
+      };
+
+      if (selectedMuscles.size > 0) {
+        properties['Muscle Groups'] = { type: 'multi_select', values: Array.from(selectedMuscles) };
+      }
+
+      if (duration) {
+        properties['Duration'] = { type: 'number', value: Number(duration) };
+      }
+
+      if (selectedRating) {
+        properties['Rating'] = { type: 'select', value: selectedRating };
+      }
+
+      if (notes) {
+        properties['Notes'] = { type: 'rich_text', value: notes };
+      }
+
+      const body = {
+        database: DB_STRENGTH,
+        title: workoutTitle,
+        content: content || '(no exercises logged)',
+        properties
+      };
+
+      try {
+        const res = await fetch(`${CORS_PROXY}/?mode=notion`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || `HTTP ${res.status}`);
+        }
+
+        // Update streak
+        updateStreak();
+
+        feedbackRow.className = 'feedback-row success';
+        feedbackRow.innerHTML = `Logged ✓ &nbsp;<a href="${data.url}" target="_blank" rel="noopener" style="color:#6ec07a;text-decoration:none;">Open in Notion →</a>`;
+
+        // Reset after short delay so user can see the link
+        setTimeout(() => {
+          resetForm();
+          feedbackRow.textContent = '';
+          feedbackRow.className = 'feedback-row';
+          logBtn.disabled = false;
+          logBtn.textContent = 'Log Workout';
+        }, 6000);
+
+      } catch (err) {
+        feedbackRow.className = 'feedback-row error';
+        feedbackRow.textContent = `Error: ${err.message}`;
+        logBtn.disabled = false;
+        logBtn.textContent = 'Log Workout';
+        setTimeout(() => {
+          feedbackRow.textContent = '';
+          feedbackRow.className = 'feedback-row';
+        }, 4000);
+      }
+    });
+
+    // --- Init ---
+    buildExerciseList();
+  </script>
+</body>
+</html>
